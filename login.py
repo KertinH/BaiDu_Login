@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import requests
@@ -31,7 +32,7 @@ def get_js():
 
 def get_basicCookie():
     '''获取初始cookie'''
-    session.get('https://www.baidu.com/',
+    session.get('http://www.baidu.com/',
                               headers={'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36'})
     session.cookies.save()
     session.cookies.load(ignore_discard=True)
@@ -42,10 +43,10 @@ def get_token():
     global gid
     get_basicCookie()
     gid = get_js()
-    url = 'https://passport.baidu.com/v2/api/?getapi'
+    url = 'http://passport.baidu.com/v2/api/?getapi'
     header = {
         'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36',
-        'referer':'https://www.baidu.com/'
+        'referer':'http://www.baidu.com/'
     }
     data = {
         'getapi': '',
@@ -67,11 +68,11 @@ def publicKey():
     '''获取公钥'''
     global key
     global token
-    url = 'https://passport.baidu.com/v2/getpublickey'
+    url = 'http://passport.baidu.com/v2/getpublickey'
     token = get_token()
     header = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36',
-        'referer': 'https://www.baidu.com/'
+        'referer': 'http://www.baidu.com/'
     }
     data = {
         'token': token,
@@ -101,15 +102,15 @@ def login():
     '''登录'''
     user_name = input('账号：')
     password = input('密码：')
-    url = 'https://passport.baidu.com/v2/api/?login'
+    url = 'http://passport.baidu.com/v2/api/?login'
     password = get_password(password)
     header = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36',
-        'referer': 'https://www.baidu.com/'
+        'referer': 'http://www.baidu.com/'
     }
 
     data = {
-        'staticpage': 'https://www.baidu.com/cache/user/html/v3Jump.html',
+        'staticpage': 'http://www.baidu.com/cache/user/html/v3Jump.html',
         'charset': 'UTF-8',
         'token': token,
         'tpl': 'mn',
@@ -118,7 +119,7 @@ def login():
         'tt': str(int(time.time()*1000)),
         'codestring': '',
         'safeflg': '0',
-        'u': 'https://www.baidu.com/',
+        'u': 'http://www.baidu.com/',
         'isPhone': 'false',
         'detect': '1',
         'gid': gid,
@@ -163,8 +164,8 @@ def login():
         elif err == 'err_no=6'or err == 'err_no=257':
             codestring = re.match('.*codeString=([a-zA-Z0-9]+)&.*', url_).group(1)
             data['codestring'] = codestring
-            captcha = session.get('https://passport.baidu.com/cgi-bin/genimage?{}'.format(codestring), headers=header, params={'{}'.format(codestring): ''})
-            # print('https://passport.baidu.com/cgi-bin/genimage?{}'.format(codestring))
+            captcha = session.get('http://passport.baidu.com/cgi-bin/genimage?{}'.format(codestring), headers=header, params={'{}'.format(codestring): ''})
+            # print('http://passport.baidu.com/cgi-bin/genimage?{}'.format(codestring))
 
             with open('captcha.jpg', 'wb') as f:
                 f.write(captcha.content)
@@ -185,8 +186,170 @@ def login():
                 'traceid': '',
                 'callback': 'bd__cbs__3olniu'
             }
-            session.get('https://passport.baidu.com/v2/?checkvcode', headers=header, params=check_data)
-
+            session.get('http://passport.baidu.com/v2/?checkvcode', headers=header, params=check_data)
+        elif err == 'err_no=120021'or err == 'err_no=400031':
+            authtoken=re.findall('.*authtoken=(.*)&', url_.replace("&","&\n"))[0]
+            lstr=re.findall('.*lstr=(.*)&', url_.replace("&","&\n"))[0]
+            ltoken=re.findall('.*ltoken=(.*)&', url_.replace("&","&\n"))[0]
+            jump_url="http://passport.baidu.com/static/passpc-account/html/v3Jump.html?%s" %(err)
+            loginproxy="https://passport.baidu.com/v2/?loginproxy&u=https://passport.baidu.com/&tpl=pp&ltoken=%s&lstr=%s&traceid=" %(ltoken,lstr)
+            jump_data={
+            'callback': 'parent.bd__pcbs__oxzeyj',
+            'codeString': '',
+            'userName': user_name,
+            'phoneNumber': '',
+            'mail': '',
+            'hao123Param': '',
+            'u': 'https://passport.baidu.com/',
+            'tpl': 'pp',
+            'secstate': '',
+            'gotourl': '',
+            'authtoken': authtoken,
+            'loginproxy': loginproxy,
+            'resetpwd': '',
+            'vcodetype': '',
+            'lstr': lstr,
+            'ltoken': ltoken,
+            'bckv': '',
+            'bcsync': '',
+            'bcchecksum': '',
+            'code': '',
+            'bdToken': '',
+            'realnameswitch': '',
+            'setpwdswitch': '',
+            'bctime': '',
+            'bdstoken': '',
+            'authsid': '',
+            'jumpset': '',
+            'appealurl': '',
+            'realnameverifyemail': '0',
+            'traceid': '',
+            'realnameauthsid': '',
+            'accounts': '',
+            }
+            jump_message=session.get(jump_url, headers=header, params=jump_data)
+            method_data={
+                'type': '',
+                'jsonp': '1',
+                'apiver': 'v3',
+                'verifychannel': '',
+                'action': 'getapi',
+                'vcode': '',
+                'questionAndAnswer': '',
+                'needsid': '',
+                'rsakey': '',
+                'countrycode': '',
+                'subpro': '',
+                'u': 'https%3A%2F%2Fpassport.baidu.com%2F',
+                'lstr': lstr,
+                'ltoken': ltoken,
+                'tpl': 'pp',
+                'traceid': '',
+                'callback': 'bd__cbs__vcvygp'
+            }
+            method_url="http://passport.baidu.com/v2/sapi/authwidgetverify?authtoken=%s" %(authtoken)
+            method_message=session.get(method_url, headers=header, params=method_data)
+            method_email=re.findall('"email":\'([0-9a-zA-Z\*@\.]*)\'', method_message.content.decode('utf-8'))
+            method_mobile=re.findall('"verifymobile":\'([0-9\*]*)\'', method_message.content.decode('utf-8'))
+            if method_email != [''] and len(method_mobile) == ['']:
+                method="1"
+                message_to_show="确认使用邮箱(%s)进行验证请输入y/Y" %(method_email[0])
+            elif len(method_email) == [''] and len(method_mobile) != ['']:
+                method="2"
+                message_to_show="确认使用手机(%s)进行验证请输入y/Y" %(method_mobile[0])
+            elif len(method_email) != [''] and len(method_mobile) != ['']:
+                method="3"
+                message_to_show="输入1/2选择验证方法：\n1:邮箱(%s)\n2:手机(%s)" %(method_email[0],method_mobile[0],)
+            method_chosen=input(message_to_show)
+            sended=""
+            final_method=""
+            if method == "1":
+                if method_chosen == "y":
+                    confirm="yes"
+                    final_method="email"
+                else:
+                    print("Login gave up")
+                    break
+            elif method == "2":
+                if method_chosen == "y":
+                    confirm="yes"
+                    final_method="verifymobile"
+                else:
+                    print("Login gave up")
+                    break
+            elif method == "3":
+                if method_chosen == "1":
+                    confirm="yes"
+                    final_method="email"
+                elif method_chosen == "2":
+                    confirm="yes"
+                    final_method="verifymobile"
+                else:
+                    print("Login gave up")
+                    break
+            send_data={
+                'type': final_method,
+                'jsonp': '1',
+                'apiver': 'v3',
+                'verifychannel': '',
+                'action': 'send',
+                'vcode': '',
+                'questionAndAnswer': '',
+                'needsid': '',
+                'rsakey': '',
+                'countrycode': '',
+                'subpro': '',
+                'u': 'https%3A%2F%2Fpassport.baidu.com%2F',
+                'lstr': lstr,
+                'ltoken': ltoken,
+                'tpl': 'pp',
+                'traceid': '',
+                'callback': 'bd__cbs__lza0it',
+            }
+            send_url="http://passport.baidu.com/v2/sapi/authwidgetverify?authtoken=%s" %(authtoken)
+            if final_method != "":
+                send_message=session.get(send_url, headers=header, params=send_data)
+                if re.findall('110000',send_message.content.decode('utf-8')):
+                    sended="ok"
+                if sended == "ok":
+                    verify_code=input("验证码已发送,请到查看信息/邮件,然后输入验证码")
+                    if verify_code != "":
+                        check_url="http://passport.baidu.com/v2/sapi/authwidgetverify?authtoken=%s" %(authtoken)
+                        check_data={
+                        'type': final_method,
+                        'jsonp': '1',
+                        'apiver': 'v3',
+                        'verifychannel': '',
+                        'action': 'check',
+                        'vcode': verify_code,
+                        'questionAndAnswer': '',
+                        'needsid': '',
+                        'rsakey': '',
+                        'countrycode': '',
+                        'subpro': '',
+                        'u': 'https%3A%2F%2Fpassport.baidu.com%2F',
+                        'lstr': lstr,
+                        'ltoken': ltoken,
+                        'tpl': 'pp',
+                        'secret': '',
+                        'traceid': '',
+                        'callback': 'bd__cbs__mbc021',
+                        }
+                        check_message=session.get(send_url, headers=header, params=check_data)
+                        if re.findall('110000',check_message.content.decode('utf-8')):
+                            proxy_url="https://passport.baidu.com/v2/?loginproxy"
+                            proxy_data={
+                            'u': 'https%3A%2F%2Fpassport.baidu.com%2F',
+                            'tpl': 'pp',
+                            'ltoken': ltoken,
+                            'lstr': lstr,
+                            'traceid': '',
+                            'apiver': 'v3',
+                            'tt': str(int(time.time()*1000)),
+                            'traceid': '',
+                            'callback': 'bd__cbs__l71zmu',
+                            }
+                            proxy_message=session.get(proxy_url, headers=header, params=proxy_data)
         else:
             print('错误类型：', err)
             exit()
