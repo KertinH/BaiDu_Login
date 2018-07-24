@@ -157,7 +157,7 @@ def login():
             session.cookies.save()
             session.cookies.load(ignore_discard=True)
 
-            response = session.get('https://i.baidu.com/', headers=header)
+            response = session.get('http://i.baidu.com/', headers=header)
             print(response.content.decode('utf-8'))
             break
 
