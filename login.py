@@ -32,7 +32,7 @@ def get_js():
 
 def get_basicCookie():
     '''获取初始cookie'''
-    session.get('http://www.baidu.com/',
+    session.get('https://www.baidu.com/',
                               headers={'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36'})
     session.cookies.save()
     session.cookies.load(ignore_discard=True)
@@ -43,10 +43,10 @@ def get_token():
     global gid
     get_basicCookie()
     gid = get_js()
-    url = 'http://passport.baidu.com/v2/api/?getapi'
+    url = 'https://passport.baidu.com/v2/api/?getapi'
     header = {
         'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36',
-        'referer':'http://www.baidu.com/'
+        'referer':'https://www.baidu.com/'
     }
     data = {
         'getapi': '',
@@ -68,11 +68,11 @@ def publicKey():
     '''获取公钥'''
     global key
     global token
-    url = 'http://passport.baidu.com/v2/getpublickey'
+    url = 'https://passport.baidu.com/v2/getpublickey'
     token = get_token()
     header = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36',
-        'referer': 'http://www.baidu.com/'
+        'referer': 'https://www.baidu.com/'
     }
     data = {
         'token': token,
@@ -102,15 +102,15 @@ def login():
     '''登录'''
     user_name = input('账号：')
     password = input('密码：')
-    url = 'http://passport.baidu.com/v2/api/?login'
+    url = 'https://passport.baidu.com/v2/api/?login'
     password = get_password(password)
     header = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36',
-        'referer': 'http://www.baidu.com/'
+        'referer': 'https://www.baidu.com/'
     }
 
     data = {
-        'staticpage': 'http://www.baidu.com/cache/user/html/v3Jump.html',
+        'staticpage': 'https://www.baidu.com/cache/user/html/v3Jump.html',
         'charset': 'UTF-8',
         'token': token,
         'tpl': 'mn',
@@ -119,7 +119,7 @@ def login():
         'tt': str(int(time.time()*1000)),
         'codestring': '',
         'safeflg': '0',
-        'u': 'http://www.baidu.com/',
+        'u': 'https://www.baidu.com/',
         'isPhone': 'false',
         'detect': '1',
         'gid': gid,
@@ -157,15 +157,15 @@ def login():
             session.cookies.save()
             session.cookies.load(ignore_discard=True)
 
-            response = session.get('http://i.baidu.com/', headers=header)
+            response = session.get('https://i.baidu.com/', headers=header)
             print(response.content.decode('utf-8'))
             break
 
         elif err == 'err_no=6'or err == 'err_no=257':
             codestring = re.match('.*codeString=([a-zA-Z0-9]+)&.*', url_).group(1)
             data['codestring'] = codestring
-            captcha = session.get('http://passport.baidu.com/cgi-bin/genimage?{}'.format(codestring), headers=header, params={'{}'.format(codestring): ''})
-            # print('http://passport.baidu.com/cgi-bin/genimage?{}'.format(codestring))
+            captcha = session.get('https://passport.baidu.com/cgi-bin/genimage?{}'.format(codestring), headers=header, params={'{}'.format(codestring): ''})
+            # print('https://passport.baidu.com/cgi-bin/genimage?{}'.format(codestring))
 
             with open('captcha.jpg', 'wb') as f:
                 f.write(captcha.content)
@@ -186,12 +186,12 @@ def login():
                 'traceid': '',
                 'callback': 'bd__cbs__3olniu'
             }
-            session.get('http://passport.baidu.com/v2/?checkvcode', headers=header, params=check_data)
+            session.get('https://passport.baidu.com/v2/?checkvcode', headers=header, params=check_data)
         elif err == 'err_no=120021'or err == 'err_no=400031':
             authtoken=re.findall('.*authtoken=(.*)&', url_.replace("&","&\n"))[0]
             lstr=re.findall('.*lstr=(.*)&', url_.replace("&","&\n"))[0]
             ltoken=re.findall('.*ltoken=(.*)&', url_.replace("&","&\n"))[0]
-            jump_url="http://passport.baidu.com/static/passpc-account/html/v3Jump.html?%s" %(err)
+            jump_url="https://passport.baidu.com/static/passpc-account/html/v3Jump.html?%s" %(err)
             loginproxy="https://passport.baidu.com/v2/?loginproxy&u=https://passport.baidu.com/&tpl=pp&ltoken=%s&lstr=%s&traceid=" %(ltoken,lstr)
             jump_data={
             'callback': 'parent.bd__pcbs__oxzeyj',
@@ -247,7 +247,7 @@ def login():
                 'traceid': '',
                 'callback': 'bd__cbs__vcvygp'
             }
-            method_url="http://passport.baidu.com/v2/sapi/authwidgetverify?authtoken=%s" %(authtoken)
+            method_url="https://passport.baidu.com/v2/sapi/authwidgetverify?authtoken=%s" %(authtoken)
             method_message=session.get(method_url, headers=header, params=method_data)
             method_email=re.findall('"email":\'([0-9a-zA-Z\*@\.]*)\'', method_message.content.decode('utf-8'))
             method_mobile=re.findall('"verifymobile":\'([0-9\*]*)\'', method_message.content.decode('utf-8'))
@@ -306,7 +306,7 @@ def login():
                 'traceid': '',
                 'callback': 'bd__cbs__lza0it',
             }
-            send_url="http://passport.baidu.com/v2/sapi/authwidgetverify?authtoken=%s" %(authtoken)
+            send_url="https://passport.baidu.com/v2/sapi/authwidgetverify?authtoken=%s" %(authtoken)
             if final_method != "":
                 send_message=session.get(send_url, headers=header, params=send_data)
                 if re.findall('110000',send_message.content.decode('utf-8')):
@@ -314,7 +314,7 @@ def login():
                 if sended == "ok":
                     verify_code=input("验证码已发送,请到查看信息/邮件,然后输入验证码")
                     if verify_code != "":
-                        check_url="http://passport.baidu.com/v2/sapi/authwidgetverify?authtoken=%s" %(authtoken)
+                        check_url="https://passport.baidu.com/v2/sapi/authwidgetverify?authtoken=%s" %(authtoken)
                         check_data={
                         'type': final_method,
                         'jsonp': '1',
